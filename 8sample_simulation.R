@@ -8,7 +8,7 @@
   
 # Create output files
   Comparison_output <- data.frame(matrix(0, ncol = 65, nrow = N_trials))
-  Non_openers_output <- data.frame(matrix(0, ncol = 10, nrow = N_trials))
+  Non_openers_output <- data.frame(matrix(0, ncol = 12, nrow = N_trials))
   Openers_output <- data.frame(matrix(0, ncol = 24, nrow = N_trials))
   
 # Create matrix to store results for each iteration, and add data from experimental 1 Free and Dyads  
@@ -23,10 +23,10 @@
 # Loop
   for (i in 1:N_trials){
     if (N_rats == 2){ 
-      rows <- sample(1:dim(Output_2rats)[1],N_sample,replace=FALSE)
+      rows <- sample(1:(dim(Output_2rats)[1]),N_sample,replace=FALSE)
       rats <- Output_2rats[rows,]
     } else if (N_rats == 3) {
-      rows <- sample(1:dim(Output_3rats)[1],N_sample,replace=FALSE)
+      rows <- sample(1:(dim(Output_3rats)[1]),N_sample,replace=FALSE)
       rats <- Output_3rats[rows,]
     }
     
@@ -48,35 +48,7 @@
                                        N = length(Latency),
                                        mean = mean(Latency)
     )
-    
-    
-            p <- 1
-            while (p < 12) {
-              if (Opening_latency_summary[p,1] == p){
-                p <- p + 1
-              } else {
-                day_noopen <- p
-                p <- 12
-              }
-            }
-            
-            d <- 1
-            while (d < day_noopen){
-              Openers_output[i,d] <- Opening_latency_summary$mean[d]
-              Openers_output[i,d+12] <- Opening_latency_summary$N[d]
-              d <- d + 1
-            }
-            
-            Openers_output[i,day_noopen] <- NA
-            Openers_output[i,day_noopen+12] <- 0
-            
-            d <- 12
-            while (d > day_noopen) {
-              Openers_output[i, d] <- Opening_latency_summary$mean[d-1]
-              Openers_output[i, d+12] <- Opening_latency_summary$N[d-1]
-              d <- d - 1
-            }
-    
+
     Results_matrix[ ,4] <- as.matrix(unlist(Opening_latency_mean))
   
     # Repeat above for median
@@ -150,31 +122,42 @@
           Results_tryad <- Comparison_output
         }
         
+        Non_openers_output[i,1:12] <- 8 -Results_matrix[,1]
             
         
   }
         
-  temp1 <- gather(Openers_output,key="Days",value="Latency",1:12)
+  temp1 <- gather(Non_openers_output,key="Days",value="Latency",1:12)
   temp2 <- gather(Openers_output,key="Days",value="Num",13:24)
   temp3 <- data.frame(matrix(ncol = 3, nrow = N_trials * 12))
   temp3[ ,1:2] <- temp1[,13:14]
   temp3[ ,3] <- temp2[ ,14]
-  temp3[ ,1] <- as.factor(c(rep(1,10000),rep(2,10000),rep(3,10000),rep(4,10000),rep(5,10000),rep(6,10000),
+  temp1[ ,1] <- as.factor(c(rep(1,10000),rep(2,10000),rep(3,10000),rep(4,10000),rep(5,10000),rep(6,10000),
              rep(7,10000),rep(8,10000),rep(9,10000),rep(10,10000),rep(11,10000),rep(12,10000))) 
-  colnames(temp3) <- c("Days", "Latency", "Num")
-    
-    Openers_triad_Summary <- ddply(temp3,c("Days"),summarise,
-                                      latencymed = median(Latency,na.rm = TRUE),
-                                      n = mean(Num,na.rm = TRUE),
-                                      sdn = sd (Num,na.rm = TRUE),
-                                      cin = qt( 1- (0.05 / 2), 10000 - 1) * sdn,
-                                      latency = mean(Latency,na.rm = TRUE),
-                                      sd = sd (Latency,na.rm = TRUE),
-                                      ci = qt( 1- (0.05 / 2), 10000 - 1) * sd,
-                                      cimax = quantile(Latency,.975, na.rm = TRUE),
-                                      cimin = quantile(Latency,.025, na.rm = TRUE)
-    )
-    Openers_triad_Summary[11] <- "Group"
-    colnames(Openers_triad_Summary)[11] <- "Group"
-      
-# 
+  colnames(temp1) <- c("Days", "Opening")
+  
+  Non_openers_dyad_Summary <- ddply(temp1,c("Days"),summarise,
+                                    openingymed = median(Opening,na.rm = TRUE),
+                                    openingmean = mean(Opening,na.rm = TRUE),
+                                    sd = sd (Opening,na.rm = TRUE),
+                                    ci = qt( 1- (0.05 / 2), 10000 - 1) * sd,
+                                    cimax = quantile(Opening,.975, na.rm = TRUE),
+                                    cimin = quantile(Opening,.025, na.rm = TRUE)
+  )
+  # 
+#     
+#     Non_peners_tryad_Summary <- ddply(temp1,c("Days"),summarise,
+#                                       latencymed = median(Latency,na.rm = TRUE),
+#                                       n = mean(Num,na.rm = TRUE),
+#                                       sdn = sd (Num,na.rm = TRUE),
+#                                       cin = qt( 1- (0.05 / 2), 10000 - 1) * sdn,
+#                                       latency = mean(Latency,na.rm = TRUE),
+#                                       sd = sd (Latency,na.rm = TRUE),
+#                                       ci = qt( 1- (0.05 / 2), 10000 - 1) * sd,
+#                                       cimax = quantile(Latency,.975, na.rm = TRUE),
+#                                       cimin = quantile(Latency,.025, na.rm = TRUE)
+#     )
+#     Openers_tryad_Summary[11] <- "Group"
+#     colnames(Openers_tryad_Summary)[11] <- "Group"
+#       
+# # 
